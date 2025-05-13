@@ -15,7 +15,7 @@ An open-source tool for optimizing cryptocurrency portfolios using modern portfo
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/crypto-portfolio-optimizer.git
+git clone https://github.com/davidopascual/crypto-portfolio-optimizer.git
 cd crypto-portfolio-optimizer
 ```
 
