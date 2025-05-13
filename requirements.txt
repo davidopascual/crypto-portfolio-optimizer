@@ -1,0 +1,9 @@
+flask
+requests
+pandas
+numpy
+PyPortfolioOpt
+cvxpy
+matplotlib
+scipy
+scikit-learn
