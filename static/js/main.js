@@ -388,6 +388,8 @@ function getFormData() {
 }
 
 function showResults(data) {
+    // Always try to render correlation matrix if possible
+    tryRenderCorrelationMatrix(data);
     // If backend returned a note or missing weights, show message
     if (!data.optimized_weights || Object.keys(data.optimized_weights).length === 0) {
         let msg = data.note || 'Unable to optimize portfolio with current data.';
@@ -851,17 +853,30 @@ function createHistoricalPerformanceChart(data) {
     }, 10);
 }
 
-// Only render correlation matrix when the tab is shown
-
-document.addEventListener('DOMContentLoaded', function() {
+// Render correlation matrix when the tab is shown, or immediately if data is present
+function tryRenderCorrelationMatrix(data) {
     const correlationTab = document.getElementById('correlation-tab');
     if (correlationTab) {
-        correlationTab.addEventListener('shown.bs.tab', function (event) {
-            if (efficientFrontierData) {
-                createCorrelationMatrixChart(efficientFrontierData);
+        correlationTab.addEventListener('shown.bs.tab', function () {
+            if (data && data.optimized_weights && Object.keys(data.optimized_weights).length > 0) {
+                createCorrelationMatrixChart(data);
+            } else {
+                console.warn('No optimized_weights for correlation matrix');
             }
         });
     }
+    // Also render immediately if the tab is already active
+    if (
+        correlationTab &&
+        correlationTab.classList.contains('active') &&
+        data && data.optimized_weights && Object.keys(data.optimized_weights).length > 0
+    ) {
+        createCorrelationMatrixChart(data);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    tryRenderCorrelationMatrix(efficientFrontierData);
 });
 
 // Create correlation matrix chart
