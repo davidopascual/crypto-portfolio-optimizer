@@ -7,3 +7,4 @@ cvxpy
 matplotlib
 scipy
 scikit-learn
+gunicorn
