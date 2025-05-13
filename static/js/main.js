@@ -239,22 +239,14 @@ window.onload = async () => {
             
             // Hide welcome card, show loading
             document.getElementById('welcome-card').style.display = 'none';
-            document.getElementById('results-section').style.display = 'none';
-            
-            const submitBtn = e.submitter;
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Optimizing...';
             
             try {
-                // Store current lookback period
-                window.currentLookbackDays = parseInt(document.getElementById('lookback').value, 10);
-                
-                // Gather form data
+                // Get form data
                 const formData = getFormData();
+                console.log('Submitting optimization with data:', formData);
                 
-                // Call optimization API
-                const response = await fetch('/api/optimize', {
+                // Call API
+                const res = await fetch('/api/optimize', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -262,27 +254,35 @@ window.onload = async () => {
                     body: JSON.stringify(formData)
                 });
                 
-                if (!response.ok) {
-                    throw new Error(`API returned ${response.status}`);
+                // Get the response text first for debugging
+                const responseText = await res.text();
+                
+                // Check if the response is valid JSON
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (jsonError) {
+                    console.error('Failed to parse API response as JSON:', responseText);
+                    throw new Error(`API returned invalid JSON: ${jsonError.message}`);
                 }
                 
-                const data = await response.json();
-                
-                if (data.error) {
-                    showError(data.error);
-                    return;
+                if (!res.ok) {
+                    console.error('API error response:', data);
+                    throw new Error(`API returned ${res.status}: ${data.error || 'Unknown error'}`);
                 }
                 
-                // Store results and show them
-                window.optimizationResults = data;
+                console.log('Received optimization data:', data);
+                efficientFrontierData = data;
+                
+                // Show results
                 showResults(data);
-                
             } catch (error) {
                 console.error('Optimization error:', error);
-                showError('Failed to optimize portfolio. Please try again.');
+                showError(`Failed to optimize portfolio: ${error.message}. Please try again later.`);
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+                // Reset button
+                document.getElementById('submit-btn').disabled = false;
+                document.getElementById('submit-btn').innerHTML = '<i class="bi bi-lightning-charge me-1"></i> Optimize';
             }
         };
     } catch (error) {
